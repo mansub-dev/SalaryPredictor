@@ -1,6 +1,7 @@
 import streamlit as st
 import pickle
 import numpy as np
+import pandas as pd
 
 def load_model():
     try:
@@ -18,6 +19,7 @@ data = load_model()
 regressor = data["model"]
 le_country = data["le_country"]
 le_education = data["le_education"]
+
 
 def show_predict_page():
     st.title("Software Developer Salary Prediction")
@@ -48,28 +50,30 @@ def show_predict_page():
         "Post grad",
     )
 
-    # Remove the 'key' argument
+    # Get user input
     country = st.selectbox("Country", countries)
     education_level = st.selectbox("Education Level", education)
-
     experience = st.slider("Years of Experience", 0, 50, 3)
 
-    # Prediction button
-    ok = st.button("Calculate Salary")
-    if ok:
-        # Prepare input data for prediction
-        X = np.array([[country, education_level, experience]])
+    # Prepare input data for prediction
+    input_data = {
+        'Country': [country],
+        'EdLevel': [education_level],
+        'YearsCodePro': [experience],
+    }
 
-        # Transform inputs using label encoders
-        try:
-            X[:, 0] = le_country.transform(X[:, 0])  # Transform country
-            X[:, 1] = le_education.transform(X[:, 1])  # Transform education level
-            X = X.astype(float)  # Ensure the data is of type float
+    # Convert the input data to a DataFrame with the correct column names
+    input_df = pd.DataFrame(input_data)
 
-            # Make the prediction
-            salary = regressor.predict(X)
-            st.subheader(f"The estimated salary is ${salary[0]:.2f}")
+    # Transform inputs using label encoders
+    try:
+        input_df['Country'] = le_country.transform(input_df['Country'])
+        input_df['EdLevel'] = le_education.transform(input_df['EdLevel'])
 
-        except Exception as e:
-            st.error(f"Error in prediction: {e}")
+        # Make the prediction using the regressor
+        salary = regressor.predict(input_df)
 
+        st.subheader(f"The estimated salary is ${salary[0]:.2f}")
+
+    except Exception as e:
+        st.error(f"Error in prediction: {e}")
