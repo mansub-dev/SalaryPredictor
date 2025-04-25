@@ -51,25 +51,29 @@ def show_predict_page():
     )
 
     # Take user input
-    country = st.selectbox("Country", countries)
-    education = st.selectbox("Education Level", education)
-    experience = st.slider("Years of Experience", 0, 50, 3)
+    country = st.selectbox("Country", countries, key="country_selectbox")
+    education_level = st.selectbox("Education Level", education, key="education_selectbox")
+    experience = st.slider("Years of Experience", 0, 50, 3, key="experience_slider")
 
     # When the button is pressed, make a prediction
-    ok = st.button("Calculate Salary")
+    ok = st.button("Calculate Salary", key="calculate_button")
     if ok:
         # Prepare the input data in the format the model expects (as a DataFrame)
-        X = pd.DataFrame([[country, education, experience]], columns=["Country", "EdLevel", "YearsCodePro"])
+        input_data = pd.DataFrame([[country, education_level, experience]], columns=["Country", "EdLevel", "YearsCodePro"])
 
         # Apply the label encoders to the input data
-        X["Country"] = le_country.transform(X["Country"])
-        X["EdLevel"] = le_education.transform(X["EdLevel"])
+        try:
+            input_data["Country"] = le_country.transform(input_data["Country"])
+            input_data["EdLevel"] = le_education.transform(input_data["EdLevel"])
 
-        # Use the trained model to predict the salary
-        salary = regressor.predict(X)
+            # Use the trained model to predict the salary
+            salary = regressor.predict(input_data)
 
-        # Display the predicted salary
-        st.subheader(f"The estimated salary is ${salary[0]:.2f}")
+            # Display the predicted salary
+            st.subheader(f"The estimated salary is ${salary[0]:.2f}")
+        
+        except Exception as e:
+            st.error(f"Error occurred while processing your request: {e}")
 
 # Call the function to display the prediction page
 show_predict_page()
