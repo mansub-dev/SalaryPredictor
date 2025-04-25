@@ -3,9 +3,14 @@ import pickle
 import numpy as np
 
 def load_model():
-    with open('saved_steps.pkl', 'rb') as file:
-        data = pickle.load(file)
-    return data
+    try:
+        with open('saved_steps.pkl', 'rb') as file:
+            data = pickle.load(file)
+        return data
+    except Exception as e:
+        st.error(f"Failed to load model: {e}")
+        raise
+
 
 # Load the model and label encoders
 data = load_model()
